@@ -9,9 +9,10 @@ const App = () => {
   ]);
   const [newName, setNewName] = useState('');
   const [newNumber, setNewNumber] = useState('');
+  const [filterKeyword, setFilterKeyword] = useState('');
 
   const addPerson = (event) => {
-    event.preventDefault()
+    event.preventDefault();
 
     if (persons.some((person) => person.name === newName )) {
       alert(`${newName} is already added to phonebook`);
@@ -21,11 +22,21 @@ const App = () => {
     setPersons(persons.concat({ name: newName, number: newNumber }));
     setNewName('');
     setNewNumber('');
+    setFilterKeyword('');
   }
+
+  const displayedPersons = filterKeyword === ''
+    ? persons
+    : persons.filter((person) => person.name.toLowerCase().includes(filterKeyword.toLowerCase()));
 
   return (
     <div>
-      <h2>Phonebook</h2>
+      <h1>Phonebook</h1>
+      <div>
+        filter shown with <input value={filterKeyword} onChange={(event) => { setFilterKeyword(event.target.value); }}
+        />
+      </div>
+      <h2>Add New</h2>
       <form onSubmit={addPerson}>
         <div>
           name: <input value={newName} onChange={(event) => setNewName(event.target.value)} />
@@ -36,7 +47,7 @@ const App = () => {
         </div>
       </form>
       <h2>Numbers</h2>
-      {persons.map((person) => <div key={person.name}>{person.name}   {person.number}</div>)}
+      {displayedPersons.map((person) => <div key={person.name}>{person.name}   {person.number}</div>)}
     </div>
   );
 }
