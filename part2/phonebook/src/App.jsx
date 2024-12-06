@@ -14,7 +14,7 @@ const App = () => {
   const addPerson = (event) => {
     event.preventDefault();
 
-    if (persons.some((person) => person.name === newName )) {
+    if (persons.some((person) => person.name.toLowerCase() === newName.toLowerCase() )) {
       alert(`${newName} is already added to phonebook`);
       return;
     }
@@ -32,23 +32,43 @@ const App = () => {
   return (
     <div>
       <h1>Phonebook</h1>
-      <div>
-        filter shown with <input value={filterKeyword} onChange={(event) => { setFilterKeyword(event.target.value); }}
-        />
-      </div>
+      <Filter keyword={filterKeyword} handleChange={setFilterKeyword} />
       <h2>Add New</h2>
-      <form onSubmit={addPerson}>
-        <div>
-          name: <input value={newName} onChange={(event) => setNewName(event.target.value)} />
-        </div>
-        <div>number: <input value={newNumber} onChange={(event) => setNewNumber(event.target.value)} /></div>
-        <div>
-          <button type="submit">add</button>
-        </div>
-      </form>
+      <PersonForm name={newName} number={newNumber}
+        handleNameChange={setNewName} handleNumberChange={setNewNumber}
+        handleSubmit={addPerson} />
       <h2>Numbers</h2>
-      {displayedPersons.map((person) => <div key={person.name}>{person.name}   {person.number}</div>)}
+      <Persons displayedPersons={displayedPersons} />
     </div>
+  );
+}
+
+const Filter = ({ keyword, handleChange }) => {
+  return (
+    <div>
+      filter shown with <input value={keyword} onChange={(event) => { handleChange(event.target.value); }}
+        />
+    </div>
+  );
+}
+
+const PersonForm = ({name, number, handleNameChange, handleNumberChange, handleSubmit}) => {
+  return (
+    <form onSubmit={handleSubmit}>
+      <div>
+        name: <input value={name} onChange={(event) => handleNameChange(event.target.value)} />
+      </div>
+      <div>number: <input value={number} onChange={(event) => handleNumberChange(event.target.value)} /></div>
+      <div>
+        <button type="submit">add</button>
+      </div>
+    </form>
+  );
+}
+
+const Persons = ({displayedPersons}) => {
+  return (
+    displayedPersons.map((person) => <div key={person.name}>{person.name}   {person.number}</div>)
   );
 }
 
