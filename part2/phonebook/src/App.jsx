@@ -18,23 +18,38 @@ const App = () => {
   const addPerson = (event) => {
     event.preventDefault();
 
-    if (persons.some((person) => person.name.toLowerCase() === newName.toLowerCase() )) {
-      alert(`${newName} is already added to phonebook`);
-      return;
+    const existingPerson = persons.find((person) => person.name.toLowerCase() === newName.toLowerCase());
+    
+    if (existingPerson !== undefined) {
+      if (confirm(`${newName} is already added to phonebook. Replace the old number with the new one?`)) {
+        personService.update(existingPerson.id, { ...existingPerson, number: newNumber })
+          .then(response => {
+            setPersons(persons.map((person) =>
+                person.id === existingPerson.id ? response.data : person
+              )
+            );
+            setNewName('');
+            setNewNumber('');
+            setFilterKeyword('');        
+          });
+      }
     }
 
-    const newPerson = {
-      name: newName,
-      number: newNumber
-    };
+    else {
+      const newPerson = {
+        name: newName,
+        number: newNumber
+      };
+  
+      personService.create(newPerson)
+        .then(response => {
+          setPersons(persons.concat(response.data));
+          setNewName('');
+          setNewNumber('');
+          setFilterKeyword('');        
+        });
+    }
 
-    personService.create(newPerson)
-      .then(response => {
-        setPersons(persons.concat(response.data));
-        setNewName('');
-        setNewNumber('');
-        setFilterKeyword('');        
-      });
   }
 
   const removePerson = (removePerson) => {
