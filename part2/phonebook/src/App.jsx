@@ -22,10 +22,18 @@ const App = () => {
       return;
     }
 
-    setPersons(persons.concat({ name: newName, number: newNumber }));
-    setNewName('');
-    setNewNumber('');
-    setFilterKeyword('');
+    const newPerson = {
+      name: newName,
+      number: newNumber
+    };
+
+    axios.post('http://localhost:3001/persons', newPerson)
+      .then(response => {
+        setPersons(persons.concat(response.data));
+        setNewName('');
+        setNewNumber('');
+        setFilterKeyword('');        
+      });
   }
 
   const displayedPersons = filterKeyword === ''
