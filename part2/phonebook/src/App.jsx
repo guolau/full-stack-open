@@ -37,6 +37,17 @@ const App = () => {
       });
   }
 
+  const removePerson = (removePerson) => {
+    if (!confirm(`Are you sure you want to delete ${removePerson.name}?`)) {
+      return;
+    }
+
+    personService.remove(removePerson.id)
+      .then(response => {
+        setPersons(persons.filter(person => person.id !== removePerson.id));
+      });
+  };
+
   const displayedPersons = filterKeyword === ''
     ? persons
     : persons.filter((person) => person.name.toLowerCase().includes(filterKeyword.toLowerCase()));
@@ -50,7 +61,7 @@ const App = () => {
         handleNameChange={setNewName} handleNumberChange={setNewNumber}
         handleSubmit={addPerson} />
       <h2>Numbers</h2>
-      <Persons displayedPersons={displayedPersons} />
+      <Persons displayedPersons={displayedPersons} handleDelete={removePerson} />
     </div>
   );
 }
@@ -78,9 +89,15 @@ const PersonForm = ({name, number, handleNameChange, handleNumberChange, handleS
   );
 }
 
-const Persons = ({displayedPersons}) => {
+const Persons = ({displayedPersons, handleDelete}) => {
   return (
-    displayedPersons.map((person) => <div key={person.name}>{person.name}   {person.number}</div>)
+    displayedPersons.map((person) =>
+      <div key={person.name}>
+        <span style={{marginRight: '0.65rem'}}>{person.name}</span>
+        <span style={{marginRight: '0.65rem'}}>{person.number}</span>
+        <button onClick={() => handleDelete(person)}>delete</button>
+      </div>
+    )
   );
 }
 

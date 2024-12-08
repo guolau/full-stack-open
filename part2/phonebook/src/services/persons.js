@@ -13,4 +13,8 @@ const update = (id, person) => {
   return axios.put(`${baseUrl}/${id}`, person);
 };
 
-export default { index, create, update };
+const remove = (id) => {
+  return axios.delete(`${baseUrl}/${id}`);
+};
+
+export default { index, create, update, remove };
