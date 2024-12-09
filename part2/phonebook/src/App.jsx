@@ -7,8 +7,10 @@ const App = () => {
   const [newName, setNewName] = useState('');
   const [newNumber, setNewNumber] = useState('');
   const [filterKeyword, setFilterKeyword] = useState('');
-  const [successMessage, setSuccessMessage] = useState(null);
-
+  const [message, setMessage] = useState(null);
+  const [notificationType, setNotificationType] = useState('');
+  const NOTIFICATION_TYPE = { success: 'success', error: 'error' };
+  
   useEffect(() => {
     personService.index()
       .then(response => {
@@ -30,11 +32,17 @@ const App = () => {
               )
             );
 
-            showNotification(`Updated contact ${response.data.name}`, setSuccessMessage);
+            showNotification(`Updated contact ${response.data.name}`, NOTIFICATION_TYPE.success);
 
             setNewName('');
             setNewNumber('');
             setFilterKeyword('');        
+          })
+          .catch(error => {
+            showNotification(
+              `Contact ${existingPerson.name} has already been removed`,
+              NOTIFICATION_TYPE.error
+            );
           });
       }
     }
@@ -44,7 +52,7 @@ const App = () => {
         .then(response => {
           setPersons(persons.concat(response.data));
 
-          showNotification(`Created contact ${response.data.name}`, setSuccessMessage);
+          showNotification(`Created contact ${response.data.name}`, NOTIFICATION_TYPE.success);
 
           setNewName('');
           setNewNumber('');
@@ -61,9 +69,23 @@ const App = () => {
     personService.remove(removedPerson.id)
       .then(response => {
         setPersons(persons.filter(person => person.id !== response.data.id));
-        showNotification(`Removed contact ${response.data.name}`, setSuccessMessage);
+        showNotification(`Removed contact ${response.data.name}`, NOTIFICATION_TYPE.success);
+      })
+      .catch(error => {
+        showNotification(
+          `Contact ${removedPerson.name} has already been removed`,
+          NOTIFICATION_TYPE.error
+        );
       });
   };
+
+  const showNotification = (message, type) => {
+    setMessage(message);
+    setNotificationType(type);
+    setTimeout(() => {
+      setMessage(null);
+    }, 5000);
+  }
 
   const displayedPersons = filterKeyword === ''
     ? persons
@@ -72,7 +94,7 @@ const App = () => {
   return (
     <div>
       <h1>Phonebook</h1>
-      <Notification message={successMessage} />
+      <Notification message={message} type={notificationType} />
       <Filter keyword={filterKeyword} handleChange={setFilterKeyword} />
       <h2>Add New</h2>
       <PersonForm name={newName} number={newNumber}
@@ -84,13 +106,13 @@ const App = () => {
   );
 }
 
-const Notification = ({ message }) => {
+const Notification = ({ message, type }) => {
   if (message === null) {
     return null;
   }
 
   return (
-    <div className='success'>
+    <div className={`${type} notification`}>
       {message}
     </div>
   );
@@ -129,13 +151,6 @@ const Persons = ({displayedPersons, handleDelete}) => {
       </div>
     )
   );
-}
-
-const showNotification = (message, setMessage) => {
-  setMessage(message);
-  setTimeout(() => {
-    setMessage(null);
-  }, 5000);
 }
 
 export default App
