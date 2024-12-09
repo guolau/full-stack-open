@@ -39,7 +39,7 @@ function App() {
     <h1>Country Info</h1>
     <div>
       <Search keyword={searchKeyword} handleChange={setSearchKeyword}></Search>
-      {countries.length !== 1 && <CountriesList countries={countries} />}
+      {countries.length !== 1 && <CountriesList countries={countries} handleShowCountry={setSelectedCountry} />}
       {selectedCountry && <CountryInfo country={selectedCountry} />}
     </div>
     </>
