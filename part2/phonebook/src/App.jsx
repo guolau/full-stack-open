@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react';
 import personService from './services/persons.js';
 import './index.css';
+import Persons from './components/Persons.jsx';
+import PersonForm from './components/PersonForm.jsx';
+import Filter from './components/Filter.jsx';
+import Notification from './components/Notification.jsx';
 
 const App = () => {
   const [persons, setPersons] = useState([]);
@@ -106,51 +110,4 @@ const App = () => {
   );
 }
 
-const Notification = ({ message, type }) => {
-  if (message === null) {
-    return null;
-  }
-
-  return (
-    <div className={`${type} notification`}>
-      {message}
-    </div>
-  );
-}
-
-const Filter = ({ keyword, handleChange }) => {
-  return (
-    <div>
-      filter shown with <input value={keyword} onChange={(event) => { handleChange(event.target.value); }}
-        />
-    </div>
-  );
-}
-
-const PersonForm = ({name, number, handleNameChange, handleNumberChange, handleSubmit}) => {
-  return (
-    <form onSubmit={handleSubmit}>
-      <div>
-        name: <input value={name} onChange={(event) => handleNameChange(event.target.value)} />
-      </div>
-      <div>number: <input value={number} onChange={(event) => handleNumberChange(event.target.value)} /></div>
-      <div>
-        <button type="submit">add</button>
-      </div>
-    </form>
-  );
-}
-
-const Persons = ({displayedPersons, handleDelete}) => {
-  return (
-    displayedPersons.map((person) =>
-      <div key={person.name}>
-        <span style={{marginRight: '0.65rem'}}>{person.name}</span>
-        <span style={{marginRight: '0.65rem'}}>{person.number}</span>
-        <button onClick={() => handleDelete(person)}>delete</button>
-      </div>
-    )
-  );
-}
-
-export default App
+export default App;
