@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
 import personService from './services/persons.js';
+import './index.css';
 
 const App = () => {
   const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState('');
   const [newNumber, setNewNumber] = useState('');
   const [filterKeyword, setFilterKeyword] = useState('');
+  const [successMessage, setSuccessMessage] = useState(null);
 
   useEffect(() => {
     personService.index()
@@ -19,7 +20,7 @@ const App = () => {
     event.preventDefault();
 
     const existingPerson = persons.find((person) => person.name.toLowerCase() === newName.toLowerCase());
-    
+
     if (existingPerson !== undefined) {
       if (confirm(`${newName} is already added to phonebook. Replace the old number with the new one?`)) {
         personService.update(existingPerson.id, { ...existingPerson, number: newNumber })
@@ -28,6 +29,12 @@ const App = () => {
                 person.id === existingPerson.id ? response.data : person
               )
             );
+
+            setSuccessMessage(`Updated contact ${response.data.name}`);
+            setTimeout(() => {
+              setSuccessMessage(null);
+            }, 5000);
+
             setNewName('');
             setNewNumber('');
             setFilterKeyword('');        
@@ -44,12 +51,17 @@ const App = () => {
       personService.create(newPerson)
         .then(response => {
           setPersons(persons.concat(response.data));
+
+          setSuccessMessage(`Created contact ${response.data.name}`);
+          setTimeout(() => {
+            setSuccessMessage(null);
+          }, 5000);
+
           setNewName('');
           setNewNumber('');
           setFilterKeyword('');        
         });
-    }
-
+    }  
   }
 
   const removePerson = (removePerson) => {
@@ -59,7 +71,11 @@ const App = () => {
 
     personService.remove(removePerson.id)
       .then(response => {
-        setPersons(persons.filter(person => person.id !== removePerson.id));
+        setPersons(persons.filter(person => person.id !== response.data.id));
+        setSuccessMessage(`Removed contact ${response.data.name}`);
+          setTimeout(() => {
+            setSuccessMessage(null);
+          }, 5000);
       });
   };
 
@@ -70,6 +86,7 @@ const App = () => {
   return (
     <div>
       <h1>Phonebook</h1>
+      <Notification message={successMessage} />
       <Filter keyword={filterKeyword} handleChange={setFilterKeyword} />
       <h2>Add New</h2>
       <PersonForm name={newName} number={newNumber}
@@ -77,6 +94,18 @@ const App = () => {
         handleSubmit={addPerson} />
       <h2>Numbers</h2>
       <Persons displayedPersons={displayedPersons} handleDelete={removePerson} />
+    </div>
+  );
+}
+
+const Notification = ({ message }) => {
+  if (message === null) {
+    return null;
+  }
+
+  return (
+    <div className='success'>
+      {message}
     </div>
   );
 }

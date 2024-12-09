@@ -1,0 +1,9 @@
+.success {
+  color: #37751C;
+  background: #9EE97D;
+  font-size: 1.15rem;
+  border-style: solid;
+  border-radius: 0.25rem;
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+}
