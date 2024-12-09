@@ -30,10 +30,7 @@ const App = () => {
               )
             );
 
-            setSuccessMessage(`Updated contact ${response.data.name}`);
-            setTimeout(() => {
-              setSuccessMessage(null);
-            }, 5000);
+            showNotification(`Updated contact ${response.data.name}`, setSuccessMessage);
 
             setNewName('');
             setNewNumber('');
@@ -43,19 +40,11 @@ const App = () => {
     }
 
     else {
-      const newPerson = {
-        name: newName,
-        number: newNumber
-      };
-  
-      personService.create(newPerson)
+      personService.create({ name: newName, number: newNumber })
         .then(response => {
           setPersons(persons.concat(response.data));
 
-          setSuccessMessage(`Created contact ${response.data.name}`);
-          setTimeout(() => {
-            setSuccessMessage(null);
-          }, 5000);
+          showNotification(`Created contact ${response.data.name}`, setSuccessMessage);
 
           setNewName('');
           setNewNumber('');
@@ -64,18 +53,15 @@ const App = () => {
     }  
   }
 
-  const removePerson = (removePerson) => {
-    if (!confirm(`Are you sure you want to delete ${removePerson.name}?`)) {
+  const removePerson = (removedPerson) => {
+    if (!confirm(`Are you sure you want to delete ${removedPerson.name}?`)) {
       return;
     }
 
-    personService.remove(removePerson.id)
+    personService.remove(removedPerson.id)
       .then(response => {
         setPersons(persons.filter(person => person.id !== response.data.id));
-        setSuccessMessage(`Removed contact ${response.data.name}`);
-          setTimeout(() => {
-            setSuccessMessage(null);
-          }, 5000);
+        showNotification(`Removed contact ${response.data.name}`, setSuccessMessage);
       });
   };
 
@@ -143,6 +129,13 @@ const Persons = ({displayedPersons, handleDelete}) => {
       </div>
     )
   );
+}
+
+const showNotification = (message, setMessage) => {
+  setMessage(message);
+  setTimeout(() => {
+    setMessage(null);
+  }, 5000);
 }
 
 export default App
