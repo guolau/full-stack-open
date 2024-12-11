@@ -72,8 +72,8 @@ const App = () => {
 
     personService.remove(removedPerson.id)
       .then(response => {
-        setPersons(persons.filter(person => person.id !== response.data.id));
-        showNotification(`Removed contact ${response.data.name}`, NOTIFICATION_TYPE.success);
+        setPersons(persons.filter(person => person.id !== removedPerson.id));
+        showNotification(`Removed contact ${removedPerson.name}`, NOTIFICATION_TYPE.success);
       })
       .catch(error => {
         showNotification(
