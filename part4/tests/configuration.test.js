@@ -109,3 +109,23 @@ describe("most blogs", () => {
     })
   })
 })
+
+describe("most likes", () => {
+  test("of empty list is null", () => {
+    assert.strictEqual(listHelper.mostLikes([]), null)
+  })
+
+  test("of list with one blog is calculated correctly", () => {
+    assert.deepStrictEqual(listHelper.mostLikes([blog]), {
+      author: "Robert C. Martin",
+      likes: 2,
+    })
+  })
+
+  test("of longer list is calculated correctly", () => {
+    assert.deepStrictEqual(listHelper.mostLikes(blogs), {
+      author: "Edsger W. Dijkstra",
+      likes: 17,
+    })
+  })
+})
