@@ -47,9 +47,10 @@ describe("create blog", () => {
     assert.strictEqual(blogs.length + 1, listResponse.body.length)
   })
 
-  test("created with correct info", async () => {
+  test("creates with correct info", async () => {
     const response = await api.post("/api/blogs").send(blog)
     const blogInDb = await Blog.findOne({ _id: response.body.id })
+    assert.deepStrictEqual(new Blog(blog).toJSON(), response.body)
     assert.deepStrictEqual(new Blog(blog).toJSON(), blogInDb.toJSON())
   })
 })
