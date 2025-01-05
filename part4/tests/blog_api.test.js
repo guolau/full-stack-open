@@ -24,7 +24,7 @@ describe("list blogs", () => {
 
   test("responds with correct number of blogs", async () => {
     const response = await api.get("/api/blogs")
-    assert.strictEqual(response.body.length, blogs.length)
+    assert.strictEqual(blogs.length, response.body.length)
   })
 })
 
@@ -44,14 +44,14 @@ describe("create blog", () => {
 
     const listResponse = await api.get("/api/blogs")
 
-    assert.strictEqual(blogs.length + 1, listResponse.body.length)
+    assert.strictEqual(listResponse.body.length, blogs.length + 1)
   })
 
   test("creates with correct info", async () => {
     const response = await api.post("/api/blogs").send(blog)
     const blogInDb = await Blog.findOne({ _id: response.body.id })
-    assert.deepStrictEqual(new Blog(blog).toJSON(), response.body)
-    assert.deepStrictEqual(new Blog(blog).toJSON(), blogInDb.toJSON())
+    assert.deepStrictEqual(response.body, new Blog(blog).toJSON())
+    assert.deepStrictEqual(blogInDb.toJSON(), new Blog(blog).toJSON())
   })
 
   test("with missing likes defaults to 0", async () => {
