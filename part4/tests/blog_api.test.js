@@ -27,6 +27,12 @@ describe("/api/blogs", () => {
   })
 })
 
+test("id key is named 'id'", async () => {
+  const response = await api.get("/api/blogs")
+  const blog = response.body[0]
+  assert(blog.hasOwnProperty("id"))
+})
+
 after(async () => {
   await mongoose.connection.close()
 })
