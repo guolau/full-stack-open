@@ -5,6 +5,7 @@ const supertest = require("supertest")
 const app = require("../app")
 const { blog, blogs } = require("./test_helper")
 const Blog = require("../models/blogs")
+var _ = require("lodash")
 
 const api = supertest(app)
 
@@ -82,6 +83,32 @@ describe("create blog", () => {
     }
 
     await api.post("/api/blogs").send(blogMissingUrl).expect(400)
+  })
+})
+
+describe("update blog", () => {
+  const idToUpdate = blogs[0]._id
+  const updatedBlog = {
+    title: "Updated blog",
+    author: "John Doe",
+    url: "https://fullstackopen.com/en/part4/testing_the_backend#test-environment",
+    likes: 99,
+  }
+
+  test("succeeds with correct response", async () => {
+    await api
+      .put(`/api/blogs/${idToUpdate}`)
+      .send(updatedBlog)
+      .expect(200)
+      .expect("Content-Type", /application\/json/)
+  })
+
+  test("saves with correct info", async () => {
+    const response = await api.put(`/api/blogs/${idToUpdate}`).send(updatedBlog)
+    const blogInDb = await Blog.findById(idToUpdate)
+
+    assert.deepStrictEqual(_.omit(response.body, ["id"]), updatedBlog)
+    assert.deepStrictEqual(_.omit(blogInDb.toJSON(), ["id"]), updatedBlog)
   })
 })
 
