@@ -49,7 +49,7 @@ describe("create blog", () => {
 
   test("creates with correct info", async () => {
     const response = await api.post("/api/blogs").send(blog)
-    const blogInDb = await Blog.findOne({ _id: response.body.id })
+    const blogInDb = await Blog.findById(response.body.id)
     assert.deepStrictEqual(response.body, new Blog(blog).toJSON())
     assert.deepStrictEqual(blogInDb.toJSON(), new Blog(blog).toJSON())
   })
@@ -82,6 +82,20 @@ describe("create blog", () => {
     }
 
     await api.post("/api/blogs").send(blogMissingUrl).expect(400)
+  })
+})
+
+describe("delete blog", () => {
+  test("succeeds with 204 code with valid id", async () => {
+    const idToDelete = blogs[0]._id
+    await api.del(`/api/blogs/${idToDelete}`).expect(204)
+  })
+
+  test("is missing from DB", async () => {
+    const idToDelete = blogs[0]._id
+    await api.del(`/api/blogs/${idToDelete}`)
+    const blogInDb = await Blog.findById(idToDelete)
+    assert.strictEqual(blogInDb, null)
   })
 })
 
