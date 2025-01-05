@@ -65,6 +65,24 @@ describe("create blog", () => {
 
     assert.strictEqual(response.body.likes, 0)
   })
+
+  test("with missing title results in 400 error", async () => {
+    const blogMissingTitle = {
+      author: "Robert C. Martin",
+      url: "http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html",
+    }
+
+    await api.post("/api/blogs").send(blogMissingTitle).expect(400)
+  })
+
+  test("with missing url results in 400 error", async () => {
+    const blogMissingUrl = {
+      title: "Type wars",
+      author: "Robert C. Martin",
+    }
+
+    await api.post("/api/blogs").send(blogMissingUrl).expect(400)
+  })
 })
 
 after(async () => {
