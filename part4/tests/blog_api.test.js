@@ -53,6 +53,18 @@ describe("create blog", () => {
     assert.deepStrictEqual(new Blog(blog).toJSON(), response.body)
     assert.deepStrictEqual(new Blog(blog).toJSON(), blogInDb.toJSON())
   })
+
+  test("with missing likes defaults to 0", async () => {
+    const blogMissingLikes = {
+      title: "Type wars",
+      author: "Robert C. Martin",
+      url: "http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html",
+    }
+
+    const response = await api.post("/api/blogs").send(blogMissingLikes)
+
+    assert.strictEqual(response.body.likes, 0)
+  })
 })
 
 after(async () => {
