@@ -14,6 +14,16 @@ const errorHandler = (error, request, response, next) => {
     return response
       .status(400)
       .send({ error: "expected `username` to be unique" })
+  } else if (
+    error.name === "JsonWebTokenError" &&
+    error.message.includes("jwt must be provided")
+  ) {
+    return response.status(401).json({ error: "bearer token required" })
+  } else if (
+    error.name === "JsonWebTokenError" &&
+    error.message.includes("invalid token")
+  ) {
+    return response.status(401).json({ error: error.message })
   }
 
   next(error)
