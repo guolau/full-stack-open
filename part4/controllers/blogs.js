@@ -43,7 +43,19 @@ blogsRouter.put("/:id", async (request, response) => {
 })
 
 blogsRouter.delete("/:id", async (request, response) => {
+  if (!request.token) {
+    return response.status(400).json({ error: "bearer token required" })
+  }
+
+  const user = await User.findById(request.token.id)
+  const blog = await Blog.findById(request.params.id).populate("user")
+
+  if (blog && blog.user.id !== user.id) {
+    return response.status(401).end()
+  }
+
   await Blog.findByIdAndDelete(request.params.id)
+
   response.status(204).end()
 })
 
