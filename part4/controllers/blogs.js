@@ -1,6 +1,6 @@
 const blogsRouter = require("express").Router()
 const Blog = require("../models/blogs")
-const User = require("../models/users")
+const middleware = require("../utils/middleware")
 
 blogsRouter.get("/", async (request, response) => {
   const blogs = await Blog.find({}).populate("user", {
@@ -11,12 +11,8 @@ blogsRouter.get("/", async (request, response) => {
   response.json(blogs)
 })
 
-blogsRouter.post("/", async (request, response) => {
-  if (!request.token) {
-    return response.status(400).json({ error: "bearer token required" })
-  }
-
-  const user = await User.findById(request.token.id)
+blogsRouter.post("/", middleware.userExtractor, async (request, response) => {
+  const user = request.user
   const blog = new Blog({ ...request.body, user })
   const savedBlog = await blog.save()
 
@@ -42,21 +38,21 @@ blogsRouter.put("/:id", async (request, response) => {
   response.json(result)
 })
 
-blogsRouter.delete("/:id", async (request, response) => {
-  if (!request.token) {
-    return response.status(400).json({ error: "bearer token required" })
+blogsRouter.delete(
+  "/:id",
+  middleware.userExtractor,
+  async (request, response) => {
+    const user = request.user
+    const blog = await Blog.findById(request.params.id).populate("user")
+
+    if (blog && blog.user.id !== user.id) {
+      return response.status(401).end()
+    }
+
+    await Blog.findByIdAndDelete(request.params.id)
+
+    response.status(204).end()
   }
-
-  const user = await User.findById(request.token.id)
-  const blog = await Blog.findById(request.params.id).populate("user")
-
-  if (blog && blog.user.id !== user.id) {
-    return response.status(401).end()
-  }
-
-  await Blog.findByIdAndDelete(request.params.id)
-
-  response.status(204).end()
-})
+)
 
 module.exports = blogsRouter
