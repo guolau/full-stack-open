@@ -13,7 +13,7 @@ const validUser = {
 }
 
 beforeEach(async () => {
-  await User.deleteMany({})
+  await User.deleteOne({ username: validUser.username })
 })
 
 describe("create user", () => {
@@ -42,6 +42,8 @@ describe("create user", () => {
         .send(invalidUsers[key])
         .expect(400, expectedErrors[key])
     }
+
+    await User.deleteOne({ username: "a" })
   })
 
   test("fails for invalid password", async () => {

@@ -42,7 +42,18 @@ const blogs = [
   },
 ]
 
+// remove specified properties from the object
+// source: https://dev.to/nas5w/how-to-select-or-omit-properties-from-an-object-in-javascript-3ina
+function omit(obj, ...props) {
+  const result = { ...obj }
+  props.forEach(function (prop) {
+    delete result[prop]
+  })
+  return result
+}
+
 module.exports = {
   blog,
   blogs,
+  omit,
 }

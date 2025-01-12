@@ -1,13 +1,24 @@
-const { test, after, describe, beforeEach } = require("node:test")
+const { test, before, after, describe, beforeEach } = require("node:test")
 const assert = require("node:assert")
 const mongoose = require("mongoose")
 const supertest = require("supertest")
 const app = require("../app")
-const { blog, blogs } = require("./test_helper")
+const { blog, blogs, omit } = require("./test_helper")
 const Blog = require("../models/blogs")
+const User = require("../models/users")
 var _ = require("lodash")
 
 const api = supertest(app)
+let token = null
+let authorizedUser = null
+const userInfo = { username: "blogTest", password: "12345" }
+
+before(async () => {
+  await User.deleteMany({ username: userInfo.username })
+  await api.post("/api/users").send(userInfo)
+  token = (await api.post("/api/login").send(userInfo)).body.token
+  authorizedUser = await User.findOne({ username: userInfo.username })
+})
 
 beforeEach(async () => {
   await Blog.deleteMany({})
@@ -40,6 +51,7 @@ describe("create blog", () => {
     await api
       .post("/api/blogs")
       .send(blog)
+      .set("Authorization", `Bearer ${token}`)
       .expect(201)
       .expect("Content-Type", /application\/json/)
 
@@ -48,11 +60,25 @@ describe("create blog", () => {
     assert.strictEqual(listResponse.body.length, blogs.length + 1)
   })
 
+  test("missing bearer token results in 401 error", async () => {
+    await api.post("/api/blogs").send(blog).expect(401)
+  })
+
   test("creates with correct info", async () => {
-    const response = await api.post("/api/blogs").send(blog)
+    const response = await api
+      .post("/api/blogs")
+      .set("Authorization", `Bearer ${token}`)
+      .send(blog)
+
     const blogInDb = await Blog.findById(response.body.id)
-    assert.deepStrictEqual(response.body, new Blog(blog).toJSON())
-    assert.deepStrictEqual(blogInDb.toJSON(), new Blog(blog).toJSON())
+    const expectedBlogAsJSON = new Blog(blog).toJSON()
+
+    assert.deepStrictEqual(omit(response.body, ["user"]), expectedBlogAsJSON)
+    assert.deepStrictEqual(
+      omit(blogInDb.toJSON(), ["user"]),
+      expectedBlogAsJSON
+    )
+    assert.strictEqual(authorizedUser.id, blogInDb.user.toString())
   })
 
   test("with missing likes defaults to 0", async () => {
@@ -62,7 +88,10 @@ describe("create blog", () => {
       url: "http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html",
     }
 
-    const response = await api.post("/api/blogs").send(blogMissingLikes)
+    const response = await api
+      .post("/api/blogs")
+      .set("Authorization", `Bearer ${token}`)
+      .send(blogMissingLikes)
 
     assert.strictEqual(response.body.likes, 0)
   })
@@ -73,7 +102,11 @@ describe("create blog", () => {
       url: "http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html",
     }
 
-    await api.post("/api/blogs").send(blogMissingTitle).expect(400)
+    await api
+      .post("/api/blogs")
+      .set("Authorization", `Bearer ${token}`)
+      .send(blogMissingTitle)
+      .expect(400)
   })
 
   test("with missing url results in 400 error", async () => {
@@ -82,7 +115,11 @@ describe("create blog", () => {
       author: "Robert C. Martin",
     }
 
-    await api.post("/api/blogs").send(blogMissingUrl).expect(400)
+    await api
+      .post("/api/blogs")
+      .set("Authorization", `Bearer ${token}`)
+      .send(blogMissingUrl)
+      .expect(400)
   })
 })
 
@@ -113,15 +150,29 @@ describe("update blog", () => {
 })
 
 describe("delete blog", () => {
+  let blogToDelete = null
+
+  before(async () => {
+    const response = await api
+      .post("/api/blogs")
+      .set("Authorization", `Bearer ${token}`)
+      .send(omit(blogs[0], ["_id"]))
+
+    blogToDelete = response.body
+  })
+
   test("succeeds with 204 code with valid id", async () => {
-    const idToDelete = blogs[0]._id
-    await api.del(`/api/blogs/${idToDelete}`).expect(204)
+    await api
+      .del(`/api/blogs/${blogToDelete.id}`)
+      .set("Authorization", `Bearer ${token}`)
+      .expect(204)
   })
 
   test("is missing from DB", async () => {
-    const idToDelete = blogs[0]._id
-    await api.del(`/api/blogs/${idToDelete}`)
-    const blogInDb = await Blog.findById(idToDelete)
+    await api
+      .del(`/api/blogs/${blogToDelete.id}`)
+      .set("Authorization", `Bearer ${token}`)
+    const blogInDb = await Blog.findById(blogToDelete.id)
     assert.strictEqual(blogInDb, null)
   })
 })
