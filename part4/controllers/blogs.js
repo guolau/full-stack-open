@@ -1,18 +1,6 @@
 const blogsRouter = require("express").Router()
 const Blog = require("../models/blogs")
 const User = require("../models/users")
-const jwt = require("jsonwebtoken")
-const config = require("../utils/config")
-
-const getToken = (request) => {
-  const authorization = request.get("Authorization")
-
-  if (authorization && authorization.startsWith("Bearer")) {
-    return authorization.replace("Bearer ", "")
-  }
-
-  return null
-}
 
 blogsRouter.get("/", async (request, response) => {
   const blogs = await Blog.find({}).populate("user", {
@@ -24,9 +12,11 @@ blogsRouter.get("/", async (request, response) => {
 })
 
 blogsRouter.post("/", async (request, response) => {
-  const decodedToken = jwt.verify(getToken(request), config.SECRET)
+  if (!request.token) {
+    return response.status(400).json({ error: "bearer token required" })
+  }
 
-  const user = await User.findById(decodedToken.id)
+  const user = await User.findById(request.token.id)
   const blog = new Blog({ ...request.body, user })
   const savedBlog = await blog.save()
 
